@@ -1,30 +1,48 @@
 import { createClient } from "@/lib/supabase/server";
+import { TemplateGallery } from "@/components/templates/template-gallery";
+import type { Template } from "@/lib/templates/types";
 
 export default async function Home() {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("templates").select("*").limit(10);
+  const { data, error } = await supabase
+    .from("templates")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  const templates: Template[] = data ?? [];
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 p-8 font-mono">
-      <h1 className="text-2xl font-bold mb-6 text-zinc-900 dark:text-zinc-50">
-        Bannerly — Supabase Hello World
-      </h1>
+    <main className="min-h-screen bg-zinc-950 font-mono text-zinc-100">
+      <section className="mx-auto max-w-5xl px-6 py-20 text-center">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+          Bannerly
+        </h1>
+        <p className="mx-auto mt-4 max-w-xl text-zinc-400">
+          Generación de imágenes dinámicas vía API. Diseña una plantilla una
+          vez, renderiza miles de variantes a escala.
+        </p>
+        <a
+          href="/dashboard/templates"
+          className="mt-8 inline-block rounded-lg border border-zinc-600 bg-zinc-800 px-6 py-2.5 text-sm font-medium text-zinc-100 transition-colors hover:bg-zinc-700"
+        >
+          Ver mis plantillas
+        </a>
+      </section>
 
-      {error ? (
-        <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
-          <p className="font-semibold">Error de conexión</p>
-          <p className="mt-1 text-sm">{error.message}</p>
-        </div>
-      ) : (
-        <div>
-          <p className="mb-4 text-sm text-zinc-500">
-            Tabla <code className="font-bold text-zinc-800 dark:text-zinc-200">templates</code> — {data?.length ?? 0} registro(s)
-          </p>
-          <pre className="rounded-lg border border-zinc-200 bg-white p-4 text-sm text-zinc-800 overflow-auto dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200">
-            {JSON.stringify(data, null, 2)}
-          </pre>
-        </div>
-      )}
-    </div>
+      <section className="mx-auto max-w-5xl px-6 pb-20">
+        <h2 className="mb-6 text-lg font-semibold text-zinc-200">
+          Plantillas disponibles
+        </h2>
+
+        {error ? (
+          <div className="rounded-lg border border-red-800 bg-red-950 p-4 text-red-400">
+            <p className="font-semibold">Error de conexión</p>
+            <p className="mt-1 text-sm">{error.message}</p>
+          </div>
+        ) : (
+          <TemplateGallery templates={templates} />
+        )}
+      </section>
+    </main>
   );
 }
