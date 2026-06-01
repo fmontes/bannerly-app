@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Home landing — golden path", () => {
-  test("muestra hero y galería, abre modal al hacer click en card y lo cierra", async ({
+  test("muestra hero y galería, navega al detalle al hacer click en card", async ({
     page,
   }) => {
     await page.goto("/");
@@ -30,23 +30,20 @@ test.describe("Home landing — golden path", () => {
     const nameEl = firstCard.getByTestId("template-card-name");
     const templateName = (await nameEl.textContent()) ?? "";
 
-    // Click en la primera card
+    // Click en la primera card navega a la página de detalle
     await firstCard.click();
+    await expect(page).toHaveURL(/\/templates\/.+/);
 
-    // Modal aparece
-    const modal = page.getByTestId("template-modal");
-    await expect(modal).toBeVisible();
-
-    // El nombre del template está en el modal
+    // El nombre del template está en el encabezado de la página de detalle
     if (templateName.trim()) {
       await expect(
-        modal.getByText(templateName.trim(), { exact: false })
+        page.getByRole("heading", { level: 1, name: templateName.trim() })
       ).toBeVisible();
     }
 
-    // Cerrar con el botón X
-    await modal.getByRole("button", { name: /cerrar/i }).click();
-    await expect(modal).toBeHidden();
+    // "Volver" regresa a la home
+    await page.getByRole("link", { name: /Volver/i }).click();
+    await expect(page).toHaveURL(/\/$/);
   });
 
   test("muestra estado vacío si no hay plantillas (sin crash)", async ({
